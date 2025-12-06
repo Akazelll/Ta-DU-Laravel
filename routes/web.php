@@ -47,7 +47,6 @@ Route::get('/dashboard', function () {
     $viewData = ['greeting' => $greeting];
 
     if (Auth::user()->role == 'admin') {
-        // ... (logika untuk admin Anda tetap sama dan sudah benar) ...
         $viewData['totalPenerbit'] = \App\Models\Penerbit::count();
         $viewData['totalBuku'] = \App\Models\Buku::count();
         $viewData['totalUser'] = \App\Models\User::count();
@@ -103,6 +102,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('peminjaman', PeminjamanController::class)->except(['show', 'destroy']);
         Route::resource('kategori', KategoriController::class)->except(['index', 'show']);
         Route::resource('users', UserController::class)->except(['create', 'store', 'show']);
+        Route::resource('penulis', App\Http\Controllers\PenulisController::class)->except(['show']);
 
         Route::get('/buku/create', [BukuController::class, 'create'])->name('buku.create');
         Route::post('/buku', [BukuController::class, 'store'])->name('buku.store');
@@ -112,7 +112,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/peminjaman/{peminjaman}/bayar-denda', [PeminjamanController::class, 'bayarDenda'])->name('peminjaman.bayarDenda');
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
-        Route::post('/buku/scan-sampul', [BookScannerController::class, 'scan'])->name('buku.scan');
+        // Route::post('/buku/scan-sampul', [BookScannerController::class, 'scan'])->name('buku.scan');
 
 
         Route::get('/laporan/peminjaman/cetak', [LaporanController::class, 'cetakPeminjaman'])->name('laporan.peminjaman.cetak');

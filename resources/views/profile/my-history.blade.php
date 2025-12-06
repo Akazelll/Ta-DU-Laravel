@@ -1,99 +1,123 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-text-main dark:text-dark-text-main leading-tight">
-            {{ __('Riwayat Peminjaman Saya') }}
-        </h2>
-    </x-slot>
+@extends('adminlte::page')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-surface dark:bg-dark-surface overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+@section('title', 'Riwayat Peminjaman Saya')
 
-                    <div class="mb-6">
-                        <h2 class="text-xl font-semibold leading-6 text-text-main dark:text-dark-text-main">Aktivitas
-                            Peminjaman Anda</h2>
-                        <p class="mt-1 text-sm text-text-subtle dark:text-dark-text-subtle">Berikut adalah daftar semua
-                            buku yang sedang dan pernah Anda pinjam.</p>
-                    </div>
+@section('content_header')
+    <h1>Riwayat Peminjaman Saya</h1>
+@stop
 
-                    <div class="space-y-4">
-                        @forelse ($peminjaman as $item)
-                            {{-- Setiap transaksi dibungkus dalam div dengan border --}}
-                            <div
-                                class="bg-base dark:bg-dark-surface rounded-lg shadow-sm p-4 border border-gray-200 dark:border-dark-primary flex items-start space-x-4">
-
-                                {{-- Ikon Status --}}
-                                <div
-                                    class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center
-                                    @if ($item->is_overdue && $item->status == 'pinjam') bg-danger @elseif($item->status == 'pinjam') bg-warning @else bg-success @endif">
-
+@section('content')
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history mr-1"></i> Aktivitas Peminjaman Anda
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {{-- Jika tidak ada data --}}
+                    @if($peminjaman->isEmpty())
+                        <div class="alert alert-default-info text-center">
+                            <i class="fas fa-info-circle mr-1"></i> Anda belum memiliki riwayat peminjaman.
+                        </div>
+                    @else
+                        {{-- Timeline --}}
+                        <div class="timeline">
+                            {{-- Loop data peminjaman --}}
+                            @foreach($peminjaman as $item)
+                                {{-- Label Tanggal --}}
+                                <div class="time-label">
+                                    <span class="bg-{{ $item->status == 'pinjam' ? 'warning' : 'success' }}">
+                                        {{ \Carbon\Carbon::parse($item->tgl_pinjam)->format('d M Y') }}
+                                    </span>
+                                </div>
+                                
+                                {{-- Item Timeline --}}
+                                <div>
+                                    {{-- Ikon berdasarkan status --}}
                                     @if ($item->is_overdue && $item->status == 'pinjam')
-                                        <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
-                                                clip-rule="evenodd" />
-                                        </svg>
+                                        <i class="fas fa-exclamation-triangle bg-danger"></i>
                                     @elseif($item->status == 'pinjam')
-                                        <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.28a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z"
-                                                clip-rule="evenodd" />
-                                        </svg>
+                                        <i class="fas fa-book-reader bg-warning"></i>
                                     @else
-                                        <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                                                clip-rule="evenodd" />
-                                        </svg>
+                                        <i class="fas fa-check bg-success"></i>
                                     @endif
-                                </div>
 
-                                {{-- Detail Peminjaman --}}
-                                <div class="min-w-0 flex-1">
-                                    <div class="text-sm">
-                                        <span
-                                            class="font-medium text-text-main dark:text-dark-text-main">{{ $item->buku?->judul_buku ?? 'Buku Telah Dihapus' }}</span>
-                                        @if ($item->is_overdue && $item->status == 'pinjam')
-                                            <span class="font-medium text-danger">(Terlambat)</span>
-                                        @elseif($item->status == 'pinjam')
-                                            <span class="font-medium text-warning">(Sedang Dipinjam)</span>
-                                        @else
-                                            <span class="font-medium text-success">(Sudah Kembali)</span>
-                                        @endif
+                                    <div class="timeline-item">
+                                        {{-- Waktu (Jam) --}}
+                                        <span class="time"><i class="fas fa-clock"></i> {{ \Carbon\Carbon::parse($item->tgl_pinjam)->format('H:i') }}</span>
+
+                                        {{-- Header --}}
+                                        <h3 class="timeline-header">
+                                            @if($item->status == 'pinjam')
+                                                Anda <strong>meminjam</strong> buku
+                                            @else
+                                                Anda <strong>mengembalikan</strong> buku
+                                            @endif
+                                            <a href="{{ $item->buku ? route('buku.show', $item->buku) : '#' }}">{{ $item->buku->judul_buku ?? '(Buku Dihapus)' }}</a>
+                                        </h3>
+
+                                        {{-- Body (Detail) --}}
+                                        <div class="timeline-body">
+                                            <div class="row">
+                                                <div class="col-sm-4">
+                                                    <strong><i class="fas fa-calendar-alt mr-1"></i> Batas Kembali:</strong><br>
+                                                    <span class="{{ $item->is_overdue && $item->status == 'pinjam' ? 'text-danger font-weight-bold' : '' }}">
+                                                        {{ \Carbon\Carbon::parse($item->tanggal_harus_kembali)->format('d F Y') }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <strong><i class="fas fa-info-circle mr-1"></i> Status:</strong><br>
+                                                    @if ($item->is_overdue && $item->status == 'pinjam')
+                                                        <span class="badge badge-danger">Terlambat</span>
+                                                    @elseif($item->status == 'pinjam')
+                                                        <span class="badge badge-warning">Sedang Dipinjam</span>
+                                                    @else
+                                                        <span class="badge badge-success">Dikembalikan</span>
+                                                        <small class="text-muted">({{ \Carbon\Carbon::parse($item->tgl_kembali)->format('d M Y') }})</small>
+                                                    @endif
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <strong><i class="fas fa-coins mr-1"></i> Denda:</strong><br>
+                                                    @if($item->denda_terhitung > 0)
+                                                        <span class="text-danger">Rp {{ number_format($item->denda_terhitung, 0, ',', '.') }}</span>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="mt-2 text-xs text-text-subtle dark:text-dark-text-subtle space-y-1">
-                                        <p><strong>Tgl. Pinjam:</strong>
-                                            {{ \Carbon\Carbon::parse($item->tgl_pinjam)->isoFormat('D MMMM Y') }}</p>
-                                        <p><strong>Batas Waktu:</strong>
-                                            {{ \Carbon\Carbon::parse($item->tanggal_harus_kembali)->isoFormat('D MMMM Y') }}
-                                        </p>
-                                        @if ($item->tgl_kembali)
-                                            <p><strong>Tgl. Kembali:</strong>
-                                                {{ \Carbon\Carbon::parse($item->tgl_kembali)->isoFormat('D MMMM Y') }}
-                                            </p>
-                                        @endif
-                                        <p><strong>Denda:</strong> <span class="font-semibold">Rp
-                                                {{ number_format($item->denda_terhitung, 0, ',', '.') }}</span></p>
-                                    </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="text-center text-text-subtle dark:text-dark-text-subtle py-10">
-                                <p>Anda belum memiliki riwayat peminjaman.</p>
-                            </div>
-                        @endforelse
-                    </div>
+                            @endforeach
 
-                    <div class="mt-6">
-                        {{ $peminjaman->links() }}
-                    </div>
+                            {{-- Icon Akhir Timeline --}}
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
 
+                        {{-- Pagination --}}
+                        <div class="mt-4 d-flex justify-content-center">
+                            {{ $peminjaman->links('pagination::bootstrap-4') }}
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+@stop
+
+@section('css')
+    <style>
+        /* Sedikit penyesuaian agar timeline item terlihat rapi */
+        .timeline-header a {
+            color: #007bff;
+            font-weight: 600;
+        }
+        .timeline-header a:hover {
+            text-decoration: underline;
+        }
+    </style>
+@stop

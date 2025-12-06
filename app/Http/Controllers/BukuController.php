@@ -7,7 +7,6 @@ use App\Models\Penerbit;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-// 1. Import Form Request yang kita buat
 use App\Http\Requests\StoreBukuRequest;
 use App\Http\Requests\UpdateBukuRequest;
 

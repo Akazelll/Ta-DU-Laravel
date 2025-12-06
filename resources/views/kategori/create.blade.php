@@ -1,31 +1,39 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-text-main dark:text-dark-text-main leading-tight">
-            {{ __('Tambah Kategori Baru') }}
-        </h2>
-    </x-slot>
+@extends('adminlte::page')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-surface dark:bg-dark-surface overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 md:p-8">
-                    <form action="{{ route('kategori.store') }}" method="POST" class="space-y-6">
-                        @csrf
-                        <div>
-                            <x-input-label for="nama_kategori" value="Nama Kategori" />
-                            <x-text-input id="nama_kategori" name="nama_kategori" type="text"
-                                class="mt-1 block w-full" :value="old('nama_kategori')" required autofocus />
-                            <x-input-error :messages="$errors->get('nama_kategori')" class="mt-2" />
-                        </div>
+@section('title', 'Tambah Kategori')
 
-                        <div class="flex items-center justify-end gap-x-4 pt-4">
-                            <a href="{{ route('kategori.index') }}"
-                                class="text-sm font-semibold leading-6 text-text-subtle dark:text-dark-text-subtle hover:text-text-main dark:hover:text-dark-text-main">Batal</a>
-                            <x-primary-button>{{ __('Simpan') }}</x-primary-button>
-                        </div>
-                    </form>
+@section('content_header')
+    <h1>Tambah Kategori Baru</h1>
+@stop
+
+@section('content')
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Form Kategori</h3>
                 </div>
+                
+                <form action="{{ route('kategori.store') }}" method="POST">
+                    @csrf
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="nama_kategori">Nama Kategori</label>
+                            <input type="text" name="nama_kategori" id="nama_kategori" 
+                                class="form-control @error('nama_kategori') is-invalid @enderror" 
+                                value="{{ old('nama_kategori') }}" placeholder="Masukkan nama kategori" required autofocus>
+                            @error('nama_kategori')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <a href="{{ route('kategori.index') }}" class="btn btn-default">Batal</a>
+                        <button type="submit" class="btn btn-primary float-right">Simpan</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</x-app-layout>
+@stop

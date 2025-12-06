@@ -1,32 +1,49 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-text-main dark:text-dark-text-main leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('adminlte::page')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            {{-- Panel untuk Informasi Profil --}}
-            <div class="p-4 sm:p-8 bg-surface dark:bg-dark-surface shadow-sm sm:rounded-lg">
-                <div class="max-w-xl">
+@section('title', 'Profil Saya')
+
+@section('content_header')
+    <h1>Profil Saya</h1>
+@stop
+
+@section('content')
+    <div class="row">
+        <div class="col-md-6">
+            {{-- Update Profile --}}
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Informasi Profil</h3>
+                </div>
+                <div class="card-body">
                     @include('profile.partials.update-profile-information-form')
                 </div>
             </div>
 
-            {{-- Panel untuk Update Password --}}
-            <div class="p-4 sm:p-8 bg-surface dark:bg-dark-surface shadow-sm sm:rounded-lg">
-                <div class="max-w-xl">
+            {{-- Update Password --}}
+            <div class="card card-warning card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Ganti Password</h3>
+                </div>
+                <div class="card-body">
                     @include('profile.partials.update-password-form')
                 </div>
             </div>
+        </div>
 
-            {{-- Panel untuk Hapus Akun --}}
-            <div class="p-4 sm:p-8 bg-surface dark:bg-dark-surface shadow-sm sm:rounded-lg">
-                <div class="max-w-xl">
+        <div class="col-md-6">
+             {{-- Delete User --}}
+             <div class="card card-danger card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Hapus Akun</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light text-danger border-danger">
+                        <h5><i class="icon fas fa-exclamation-triangle"></i> Perhatian!</h5>
+                        Tindakan ini tidak dapat dibatalkan. Semua data dan riwayat peminjaman Anda akan dihapus secara permanen.
+                    </div>
                     @include('profile.partials.delete-user-form')
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+@stop

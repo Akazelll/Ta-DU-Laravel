@@ -1,35 +1,39 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-text-main dark:text-dark-text-main leading-tight">
-            {{ __('Tambah Penerbit Baru') }}
-        </h2>
-    </x-slot>
+@extends('adminlte::page')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-surface dark:bg-dark-surface overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 md:p-8">
+@section('title', 'Tambah Penerbit')
 
-                    <form action="{{ route('penerbit.store') }}" method="POST" class="space-y-6">
-                        @csrf
+@section('content_header')
+    <h1>Tambah Penerbit Baru</h1>
+@stop
 
-                        <div>
-                            <x-input-label for="nama_penerbit" value="Nama Penerbit" />
-                            <x-text-input id="nama_penerbit" name="nama_penerbit" type="text"
-                                class="mt-1 block w-full" :value="old('nama_penerbit')" required autofocus
-                                placeholder="Masukkan Nama Penerbit" />
-                            <x-input-error :messages="$errors->get('nama_penerbit')" class="mt-2" />
-                        </div>
-
-                        <div class="flex items-center justify-end gap-x-4 pt-4">
-                            <a href="{{ route('penerbit.index') }}"
-                                class="text-sm font-semibold leading-6 text-text-subtle dark:text-dark-text-subtle hover:text-text-main dark:hover:text-dark-text-main">Batal</a>
-                            <x-primary-button>{{ __('Simpan') }}</x-primary-button>
-                        </div>
-                    </form>
-
+@section('content')
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Form Penerbit</h3>
                 </div>
+                
+                <form action="{{ route('penerbit.store') }}" method="POST">
+                    @csrf
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="nama_penerbit">Nama Penerbit</label>
+                            <input type="text" name="nama_penerbit" id="nama_penerbit" 
+                                class="form-control @error('nama_penerbit') is-invalid @enderror" 
+                                value="{{ old('nama_penerbit') }}" placeholder="Masukkan nama penerbit" required autofocus>
+                            @error('nama_penerbit')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <a href="{{ route('penerbit.index') }}" class="btn btn-default">Batal</a>
+                        <button type="submit" class="btn btn-primary float-right">Simpan</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</x-app-layout>
+@stop

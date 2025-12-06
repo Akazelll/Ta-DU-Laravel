@@ -1,108 +1,100 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-text-main dark:text-dark-text-main leading-tight">
-            {{ __('Edit Pengguna: ') . $user->name }}
-        </h2>
-    </x-slot>
+@extends('adminlte::page')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            {{-- Form untuk Informasi Profil --}}
-            <div class="p-4 sm:p-8 bg-surface dark:bg-dark-surface shadow-sm sm:rounded-lg">
-                <section>
-                    <header>
-                        <h2 class="text-lg font-medium text-text-main dark:text-dark-text-main">Informasi Profil</h2>
-                        <p class="mt-1 text-sm text-text-subtle dark:text-dark-text-subtle">Perbarui informasi profil dan
-                            alamat email pengguna.</p>
-                    </header>
+@section('title', 'Edit Anggota')
 
-                    {{-- Menambahkan onsubmit untuk memanggil SweetAlert --}}
-                    <form method="post" action="{{ route('users.update', $user) }}" class="mt-6 space-y-6"
-                        onsubmit="confirmUpdate(event, 'profil')">
-                        @csrf
-                        @method('PUT')
+@section('content_header')
+    <h1>Edit Data Anggota</h1>
+@stop
 
-                        <div>
-                            <x-input-label for="name" :value="__('Nama')" />
-                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full"
-                                :value="old('name', $user->name)" required autofocus />
-                            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+@section('content')
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">Form Edit User</h3>
+                </div>
+                
+                <form action="{{ route('users.update', $user->id) }}" method="POST" onsubmit="confirmUpdate(event)">
+                    @csrf
+                    @method('PUT')
+                    
+                    <div class="card-body">
+                        {{-- Nama --}}
+                        <div class="form-group">
+                            <label for="name">Nama Lengkap</label>
+                            <input type="text" name="name" id="name" 
+                                class="form-control @error('name') is-invalid @enderror" 
+                                value="{{ old('name', $user->name) }}" required>
+                            @error('name')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
                         </div>
-                        <div>
-                            <x-input-label for="email" :value="__('Email')" />
-                            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full"
-                                :value="old('email', $user->email)" required />
-                            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <x-primary-button>{{ __('Simpan Perubahan') }}</x-primary-button>
-                        </div>
-                    </form>
-                </section>
-            </div>
 
-            {{-- Form untuk Reset Password --}}
-            <div class="p-4 sm:p-8 bg-surface dark:bg-dark-surface shadow-sm sm:rounded-lg">
-                <section>
-                    <header>
-                        <h2 class="text-lg font-medium text-text-main dark:text-dark-text-main">Reset Password</h2>
-                        <p class="mt-1 text-sm text-text-subtle dark:text-dark-text-subtle">Buat password baru untuk
-                            pengguna ini. Biarkan kosong jika tidak ingin mengubahnya.</p>
-                    </header>
+                        {{-- Email --}}
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" 
+                                class="form-control @error('email') is-invalid @enderror" 
+                                value="{{ old('email', $user->email) }}" required>
+                            @error('email')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                    {{-- Menambahkan onsubmit untuk memanggil SweetAlert --}}
-                    <form method="post" action="{{ route('users.update', $user) }}" class="mt-6 space-y-6"
-                        onsubmit="confirmUpdate(event, 'password')">
-                        @csrf
-                        @method('PUT')
+                        {{-- Kode Anggota (Read Only biasanya, tapi bisa diedit jika perlu) --}}
+                        <div class="form-group">
+                            <label for="kode_anggota">Kode Anggota</label>
+                            <input type="text" name="kode_anggota" id="kode_anggota" 
+                                class="form-control @error('kode_anggota') is-invalid @enderror" 
+                                value="{{ old('kode_anggota', $user->kode_anggota) }}">
+                            <small class="text-muted">Kosongkan jika ingin digenerate otomatis (jika didukung sistem).</small>
+                            @error('kode_anggota')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                        <div>
-                            <x-input-label for="password" :value="__('Password Baru')" />
-                            <x-text-input id="password" name="password" type="password" class="mt-1 block w-full"
-                                autocomplete="new-password" />
-                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                        {{-- Role (Jika admin bisa ubah role) --}}
+                        <div class="form-group">
+                            <label for="role">Role</label>
+                            <select name="role" id="role" class="form-control @error('role') is-invalid @enderror">
+                                <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User Biasa</option>
+                                <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrator</option>
+                            </select>
+                            @error('role')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
                         </div>
-                        <div>
-                            <x-input-label for="password_confirmation" :value="__('Konfirmasi Password Baru')" />
-                            <x-text-input id="password_confirmation" name="password_confirmation" type="password"
-                                class="mt-1 block w-full" autocomplete="new-password" />
-                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <x-primary-button>{{ __('Reset Password') }}</x-primary-button>
-                        </div>
-                    </form>
-                </section>
+                    </div>
+
+                    <div class="card-footer">
+                        <a href="{{ route('users.index') }}" class="btn btn-default">Batal</a>
+                        <button type="submit" class="btn btn-warning float-right">Update Data</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+@stop
 
-    @push('scripts')
-        <script>
-            function confirmUpdate(event, formType) {
-                event.preventDefault(); // Mencegah form dikirim secara langsung
-
-                const isDarkMode = document.documentElement.classList.contains('dark');
-                let titleText = formType === 'profil' ? 'Konfirmasi Perubahan Profil' : 'Konfirmasi Reset Password';
-
-                Swal.fire({
-                    title: titleText,
-                    text: "Apakah Anda yakin ingin menyimpan perubahan ini?",
-                    icon: 'question',
-                    background: isDarkMode ? '#1A1A1A' : '#ffffff',
-                    color: isDarkMode ? '#EDEDED' : '#111827',
-                    showCancelButton: true,
-                    confirmButtonColor: '#16a34a',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Ya, Simpan!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Jika dikonfirmasi, kirim form
-                        event.target.submit();
-                    }
-                })
-            }
-        </script>
-    @endpush
-</x-app-layout>
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmUpdate(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: "Pastikan data yang diinput sudah benar.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Update!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    event.target.submit();
+                }
+            })
+        }
+    </script>
+@stop

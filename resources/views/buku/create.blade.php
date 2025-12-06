@@ -1,192 +1,163 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-text-main dark:text-dark-text-main leading-tight">
-            {{ __('Tambah Buku Baru') }}
-        </h2>
-    </x-slot>
+@extends('adminlte::page')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-surface dark:bg-dark-surface overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 md:p-8" x-data="bookScanner()">
+@section('title', 'Tambah Buku Baru')
 
-                    {{-- BAGIAN 1: FITUR TAMBAH CEPAT DENGAN AI --}}
-                    <div class="mb-8 pb-8 border-b border-gray-200 dark:border-dark-primary">
-                        <h3 class="text-lg font-semibold leading-6 text-text-main dark:text-dark-text-main">Tambah Cepat
-                            dengan AI</h3>
-                        <p class="mt-1 text-sm text-text-subtle dark:text-dark-text-subtle">Unggah gambar sampul dan
-                            biarkan sistem mengisi detailnya secara otomatis di form di bawah ini.</p>
+@section('content_header')
+    <h1>Tambah Buku Baru</h1>
+@stop
 
-                        <button type="button" @click="$refs.coverInput.click()" :disabled="isLoading"
-                            class="mt-4 inline-flex items-center gap-x-2 rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-opacity-90 disabled:bg-opacity-70 disabled:cursor-not-allowed transition-colors duration-200">
-                            <svg x-show="!isLoading" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M1.5 6a2.5 2.5 0 012.5-2.5h11.5a2.5 2.5 0 012.5 2.5v7.5a2.5 2.5 0 01-2.5 2.5H4A2.5 2.5 0 011.5 13.5V6zM4 16a1.5 1.5 0 01-1.5-1.5V6A1.5 1.5 0 014 4.5h11.5a1.5 1.5 0 011.5 1.5v7.5a1.5 1.5 0 01-1.5 1.5H4z"
-                                    clip-rule="evenodd" />
-                                <path d="M6.5 10.5a.5.5 0 000-1h7a.5.5 0 000 1h-7z" />
-                                <path d="M10 7.5a.5.5 0 00-1 0v7a.5.5 0 001 0v-7z" />
-                            </svg>
-                            <svg x-show="isLoading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                            <span x-text="isLoading ? 'Memindai...' : 'Pindai Sampul Buku'"></span>
-                        </button>
+@section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Detail Buku (Manual)</h3>
+                </div>
 
-                        <input type="file" x-ref="coverInput" @change="handleFileSelect" class="hidden"
-                            accept="image/png, image/jpeg, image/webp">
+                <form action="{{ route('buku.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="card-body">
 
-                        <div x-show="errorMessage" x-cloak
-                            class="mt-4 p-4 bg-red-50 dark:bg-danger/20 rounded-lg text-sm text-red-700 dark:text-red-300"
-                            x-text="errorMessage"></div>
-                    </div>
-
-                    {{-- BAGIAN 2: FORM PENGISIAN MANUAL --}}
-                    <h3 class="text-lg font-semibold leading-6 text-text-main dark:text-dark-text-main">Detail Buku
-                        (Manual)</h3>
-                    <form action="{{ route('buku.store') }}" method="POST" enctype="multipart/form-data"
-                        class="mt-6 space-y-6">
-                        @csrf
-
-                        <div>
-                            <x-input-label for="judul_buku" value="Judul Buku" />
-                            <x-text-input id="judul_buku" name="judul_buku" type="text" class="mt-1 block w-full"
-                                x-model="book.judul_buku" required />
-                            <x-input-error :messages="$errors->get('judul_buku')" class="mt-2" />
+                        {{-- Judul Buku --}}
+                        <div class="form-group">
+                            <label for="judul_buku">Judul Buku</label>
+                            <input type="text" name="judul_buku" id="judul_buku"
+                                class="form-control @error('judul_buku') is-invalid @enderror"
+                                value="{{ old('judul_buku') }}" required placeholder="Masukkan judul buku">
+                            @error('judul_buku')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
 
-                        <div>
-                            <x-input-label for="kategori_id" value="Kategori" />
-                            <select id="kategori_id" name="kategori_id"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-dark-surface dark:text-dark-text-main rounded-md shadow-sm focus:border-primary dark:focus:border-dark-primary focus:ring-primary dark:focus:ring-dark-primary">
+                        {{-- Kategori --}}
+                        <div class="form-group">
+                            <label for="kategori_id">Kategori</label>
+                            <select name="kategori_id" id="kategori_id"
+                                class="form-control @error('kategori_id') is-invalid @enderror">
                                 <option value="">- Pilih Kategori -</option>
                                 @foreach ($kategori as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama_kategori }}</option>
+                                    <option value="{{ $item->id }}"
+                                        {{ old('kategori_id') == $item->id ? 'selected' : '' }}>{{ $item->nama_kategori }}
+                                    </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('kategori_id')" class="mt-2" />
+                            @error('kategori_id')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
 
-                        <div>
-                            <x-input-label for="id_penerbit" value="Penerbit" />
-                            <select id="id_penerbit" name="id_penerbit"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-dark-surface dark:text-dark-text-main rounded-md shadow-sm focus:border-primary dark:focus:border-dark-primary focus:ring-primary dark:focus:ring-dark-primary"
-                                required>
+                        {{-- Penerbit --}}
+                        <div class="form-group">
+                            <label for="id_penerbit">Penerbit</label>
+                            <select name="id_penerbit" id="id_penerbit"
+                                class="form-control @error('id_penerbit') is-invalid @enderror" required>
                                 <option value="">- Pilih Penerbit -</option>
                                 @foreach ($penerbit as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama_penerbit }}</option>
+                                    <option value="{{ $item->id }}"
+                                        {{ old('id_penerbit') == $item->id ? 'selected' : '' }}>{{ $item->nama_penerbit }}
+                                    </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('id_penerbit')" class="mt-2" />
+                            @error('id_penerbit')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
 
-                        <div>
-                            <x-input-label for="tahun_terbit" value="Tahun Terbit" />
-                            <x-text-input id="tahun_terbit" name="tahun_terbit" type="number" class="mt-1 block w-full"
-                                x-model="book.tahun_terbit" placeholder="YYYY" required />
-                            <x-input-error :messages="$errors->get('tahun_terbit')" class="mt-2" />
+                        {{-- Penulis --}}
+                        <div class="form-group">
+                            <label for="id_penulis">Penulis</label>
+                            <select name="id_penulis" id="id_penulis" class="form-control select2" required>
+                                <option value="">- Pilih Penulis -</option>
+                                @foreach ($penulis as $p)
+                                    {{-- Sesuaikan variabel old/selected --}}
+                                    <option value="{{ $p->id }}">{{ $p->nama_penulis }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
-                        <div>
-                            <x-input-label for="jml_halaman" value="Jumlah Halaman" />
-                            <x-text-input id="jml_halaman" name="jml_halaman" type="number" class="mt-1 block w-full"
-                                x-model="book.jml_halaman" required />
-                            <x-input-error :messages="$errors->get('jml_halaman')" class="mt-2" />
+                        {{-- Tahun Terbit --}}
+                        <div class="form-group">
+                            <label for="tahun_terbit">Tahun Terbit</label>
+                            <input type="number" name="tahun_terbit" id="tahun_terbit"
+                                class="form-control @error('tahun_terbit') is-invalid @enderror"
+                                value="{{ old('tahun_terbit') }}" placeholder="YYYY" required>
+                            @error('tahun_terbit')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
 
-                        <div>
-                            <x-input-label for="stok" value="Stok Buku" />
-                            <x-text-input id="stok" name="stok" type="number" class="mt-1 block w-full"
-                                :value="old('stok', 1)" required />
-                            <x-input-error :messages="$errors->get('stok')" class="mt-2" />
+                        {{-- Jumlah Halaman --}}
+                        <div class="form-group">
+                            <label for="jml_halaman">Jumlah Halaman</label>
+                            <input type="number" name="jml_halaman" id="jml_halaman"
+                                class="form-control @error('jml_halaman') is-invalid @enderror"
+                                value="{{ old('jml_halaman') }}" required>
+                            @error('jml_halaman')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
 
-                        <div>
-                            <x-input-label for="sampul" value="Gambar Sampul (Manual)" />
-                            <input id="sampul" name="sampul" type="file"
-                                class="mt-1 block w-full text-sm text-text-subtle dark:text-dark-text-subtle border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-surface focus:outline-none">
-                            <p class="mt-1 text-xs text-text-subtle dark:text-dark-text-subtle">Gunakan ini jika
-                                pemindai AI gagal atau untuk mengunggah gambar spesifik.</p>
-                            <x-input-error :messages="$errors->get('sampul')" class="mt-2" />
+                        {{-- Stok --}}
+                        <div class="form-group">
+                            <label for="stok">Stok Buku</label>
+                            <input type="number" name="stok" id="stok"
+                                class="form-control @error('stok') is-invalid @enderror" value="{{ old('stok', 1) }}"
+                                required>
+                            @error('stok')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
 
-                        <div class="flex items-center justify-end gap-x-4 pt-6">
-                            <a href="{{ route('buku.index') }}"
-                                class="text-sm font-semibold leading-6 text-text-subtle dark:text-dark-text-subtle hover:text-text-main dark:hover:text-dark-text-main">Batal</a>
-                            <x-primary-button>{{ __('Simpan Buku') }}</x-primary-button>
+                        {{-- Sampul --}}
+                        <div class="form-group">
+                            <label for="sampul">Gambar Sampul</label>
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" name="sampul" id="sampul"
+                                        class="custom-file-input @error('sampul') is-invalid @enderror">
+                                    <label class="custom-file-label" for="sampul">Pilih file</label>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Format: jpeg, png, jpg, webp.</small>
+                            @error('sampul')
+                                <span class="text-danger text-sm">{{ $message }}</span>
+                            @enderror
                         </div>
-                    </form>
-                </div>
+
+                    </div>
+
+                    <div class="card-footer">
+                        <a href="{{ route('buku.index') }}" class="btn btn-default">Batal</a>
+                        <button type="submit" class="btn btn-primary float-right">Simpan Buku</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+@stop
 
-    @push('scripts')
-        <script>
-            function bookScanner() {
-                return {
-                    isLoading: false,
-                    errorMessage: '',
-                    book: {
-                        judul_buku: '{{ old('judul_buku') }}',
-                        tahun_terbit: '{{ old('tahun_terbit') }}',
-                        jml_halaman: '{{ old('jml_halaman') }}',
-                    },
-                    handleFileSelect(event) {
-                        this.isLoading = true;
-                        this.errorMessage = '';
-                        const file = event.target.files[0];
-                        if (!file) {
-                            this.isLoading = false;
-                            return;
-                        }
-                        const formData = new FormData();
-                        formData.append('cover_image', file);
-                        fetch('{{ route('buku.scan') }}', {
-                                method: 'POST',
-                                body: formData,
-                                headers: {
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json',
-                                },
-                            })
-                            .then(async response => {
-                                if (!response.ok) {
-                                    const errorData = await response.json();
-                                    throw new Error(errorData.message || `Error: ${response.statusText}`);
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                this.isLoading = false;
-                                this.book.judul_buku = data.judul_buku || '';
-                                this.book.tahun_terbit = data.tahun_terbit || '';
-                                this.book.jml_halaman = data.jml_halaman || '';
-                                this.findAndSelectOption('id_penerbit', data.penerbit);
-                            })
-                            .catch(error => {
-                                this.isLoading = false;
-                                this.errorMessage = `Gagal memindai: ${error.message}. Silakan coba lagi atau isi manual.`;
-                                console.error('Scan Error:', error);
-                            });
-                    },
-                    findAndSelectOption(selectId, textToFind) {
-                        const selectElement = document.getElementById(selectId);
-                        if (!selectElement || !textToFind) return;
-                        for (let i = 0; i < selectElement.options.length; i++) {
-                            if (selectElement.options[i].text.toLowerCase().includes(textToFind.toLowerCase())) {
-                                selectElement.selectedIndex = i;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        </script>
-    @endpush
-</x-app-layout>
+@section('css')
+    {{-- Tambahkan CSS kustom jika diperlukan --}}
+@stop
+
+@section('js')
+    <script>
+        // Script untuk menampilkan nama file yang dipilih di input file bootstrap
+        $(".custom-file-input").on("change", function() {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
+    </script>
+@stop
