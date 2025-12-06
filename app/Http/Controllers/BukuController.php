@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Buku;
 use App\Models\Penerbit;
 use App\Models\Kategori;
+use App\Models\Penulis; // [PENTING] Untuk fix error undefined variable $penulis
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreBukuRequest;
 use App\Http\Requests\UpdateBukuRequest;
+use Illuminate\Support\Str; // [PENTING] Untuk fix error Class 'String' not found
 
 class BukuController extends Controller
 {
@@ -20,7 +22,7 @@ class BukuController extends Controller
         $search = $request->input('search');
         $kategoriFilter = $request->input('kategori');
 
-        $buku = Buku::with(['penerbit', 'kategori'])
+        $buku = Buku::with(['penerbit', 'kategori', 'penulis']) // Eager load penulis juga
             ->when($search, function ($query, $search) {
                 return $query->where('judul_buku', 'like', "%{$search}%")
                     ->orWhereHas('penerbit', function ($q) use ($search) {
@@ -43,18 +45,19 @@ class BukuController extends Controller
     {
         $penerbit = Penerbit::all();
         $kategori = Kategori::all();
-        return view('buku.create', compact('penerbit', 'kategori'));
+        $penulis = Penulis::all(); // [FIX] Ambil data penulis
+
+        return view('buku.create', compact('penerbit', 'kategori', 'penulis'));
     }
 
-    // 2. Ganti 'Request' menjadi 'StoreBukuRequest'
     public function store(StoreBukuRequest $request)
     {
-
         $validatedData = $request->validated();
 
-
+        // Generate Kode Buku Unik
         do {
-            $kodeBuku = strtoupper(String::random(5)) . mt_rand(10000, 99999);
+            // [FIX] Ganti String::random menjadi Str::random
+            $kodeBuku = strtoupper(Str::random(5)) . mt_rand(10000, 99999);
         } while (Buku::where('kode_buku', $kodeBuku)->exists());
 
         $validatedData['kode_buku'] = $kodeBuku;
@@ -78,13 +81,13 @@ class BukuController extends Controller
     {
         $penerbit = Penerbit::all();
         $kategori = Kategori::all();
-        return view('buku.edit', compact('buku', 'penerbit', 'kategori'));
+        $penulis = Penulis::all(); // [FIX] Ambil data penulis untuk form edit
+
+        return view('buku.edit', compact('buku', 'penerbit', 'kategori', 'penulis'));
     }
 
-    // 3. Ganti 'Request' menjadi 'UpdateBukuRequest'
     public function update(UpdateBukuRequest $request, Buku $buku)
     {
-        // Sekarang $request->validated() akan berfungsi
         $validatedData = $request->validated();
 
         if ($request->hasFile('sampul')) {
@@ -102,13 +105,16 @@ class BukuController extends Controller
 
     public function destroy(Buku $buku)
     {
+        if ($buku->sampul) {
+            Storage::disk('public')->delete($buku->sampul);
+        }
         $buku->delete();
         return redirect()->back()->with('success', 'Buku berhasil dihapus.');
     }
 
     public function downloadPDF()
     {
-        $buku = Buku::with(['penerbit', 'kategori'])->orderBy('judul_buku', 'asc')->get();
+        $buku = Buku::with(['penerbit', 'kategori', 'penulis'])->orderBy('judul_buku', 'asc')->get();
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('buku.pdf', compact('buku'));
         return $pdf->stream('laporan-data-buku.pdf');
     }

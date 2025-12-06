@@ -17,7 +17,8 @@
                             {{-- Search --}}
                             <form action="{{ route('peminjaman.index') }}" method="GET" class="mr-2">
                                 <div class="input-group input-group-sm" style="width: 250px;">
-                                    <input type="text" name="search" class="form-control" placeholder="Cari peminjam/buku..." value="{{ request('search') }}">
+                                    <input type="text" name="search" class="form-control"
+                                        placeholder="Cari peminjam/buku..." value="{{ request('search') }}">
                                     <div class="input-group-append">
                                         <button type="submit" class="btn btn-default">
                                             <i class="fas fa-search"></i>
@@ -25,13 +26,15 @@
                                     </div>
                                 </div>
                             </form>
-                            
+
                             {{-- Tombol Tambah --}}
                             @if (Auth::user()->role == 'admin')
-                                <a href="{{ route('peminjaman.create') }}" class="btn btn-sm btn-primary" title="Buat Peminjaman Baru">
+                                <a href="{{ route('peminjaman.create') }}" class="btn btn-sm btn-primary"
+                                    title="Buat Peminjaman Baru">
                                     <i class="fas fa-plus"></i> <span class="d-none d-md-inline">Peminjaman Baru</span>
                                 </a>
-                                <a href="{{ route('laporan.peminjaman.cetak') }}" target="_blank" class="btn btn-sm btn-info ml-1" title="Cetak Laporan">
+                                <a href="{{ route('laporan.peminjaman.cetak') }}" target="_blank"
+                                    class="btn btn-sm btn-info ml-1" title="Cetak Laporan">
                                     <i class="fas fa-print"></i> <span class="d-none d-md-inline">Cetak</span>
                                 </a>
                             @endif
@@ -69,26 +72,28 @@
                                     <td>{{ \Carbon\Carbon::parse($item->tgl_pinjam)->format('d/m/Y') }}</td>
                                     <td>
                                         {{ \Carbon\Carbon::parse($item->tgl_harus_kembali)->format('d/m/Y') }}
-                                        @if($item->is_overdue && $item->status == 'pinjam')
+                                        @if ($item->is_overdue && $item->status == 'pinjam')
                                             <i class="fas fa-exclamation-circle text-danger" title="Terlambat!"></i>
                                         @endif
                                     </td>
                                     <td>
                                         @if ($item->status == 'pinjam')
                                             <span class="badge badge-warning">Dipinjam</span>
-                                            @if($item->is_overdue)
+                                            @if ($item->is_overdue)
                                                 <br><small class="text-danger font-weight-bold">Terlambat</small>
                                             @endif
                                         @elseif ($item->status == 'kembali')
                                             <span class="badge badge-success">Dikembalikan</span>
-                                            <br><small class="text-muted">{{ \Carbon\Carbon::parse($item->tgl_kembali)->format('d/m/Y') }}</small>
+                                            <br><small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->tgl_kembali)->format('d/m/Y') }}</small>
                                         @else
                                             <span class="badge badge-secondary">{{ $item->status }}</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($item->denda_terhitung > 0)
-                                            <span class="text-danger font-weight-bold">Rp {{ number_format($item->denda_terhitung, 0, ',', '.') }}</span>
+                                        @if ($item->denda > 0)
+                                            <span class="text-danger font-weight-bold">Rp
+                                                {{ number_format($item->denda, 0, ',', '.') }}</span>
                                         @else
                                             -
                                         @endif
@@ -97,29 +102,34 @@
                                         @if ($item->status == 'pinjam' && Auth::user()->role == 'admin')
                                             <div class="btn-group">
                                                 {{-- Tombol Kembalikan --}}
-                                                <button type="button" onclick="confirmReturn({{ $item->id }}, '{{ $item->user->name }}', '{{ $item->buku->judul_buku }}')" class="btn btn-sm btn-success" title="Kembalikan Buku">
+                                                <button type="button"
+                                                    onclick="confirmReturn({{ $item->id }}, '{{ $item->user->name }}', '{{ $item->buku->judul_buku }}')"
+                                                    class="btn btn-sm btn-success" title="Kembalikan Buku">
                                                     <i class="fas fa-check"></i> Kembalikan
                                                 </button>
-                                                
+
                                                 {{-- Tombol Edit (Jika Perlu) --}}
-                                                <a href="{{ route('peminjaman.edit', $item) }}" class="btn btn-sm btn-default" title="Edit">
+                                                <a href="{{ route('peminjaman.edit', $item) }}"
+                                                    class="btn btn-sm btn-default" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </div>
 
                                             {{-- Form Pengembalian Hidden --}}
-                                            <form id="return-form-{{ $item->id }}" action="{{ route('peminjaman.update', $item->id) }}" method="POST" style="display: none;">
+                                            <form id="return-form-{{ $item->id }}"
+                                                action="{{ route('peminjaman.update', $item->id) }}" method="POST"
+                                                style="display: none;">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="status" value="kembali">
                                             </form>
-
                                         @elseif ($item->status == 'kembali')
                                             <button class="btn btn-sm btn-outline-secondary" disabled>Selesai</button>
                                         @endif
-                                        
+
                                         @if ($item->denda_terhitung > 0 && $item->status_denda != 'lunas' && Auth::user()->role == 'admin')
-                                            <button type="button" class="btn btn-sm btn-danger ml-1" onclick="bayarDenda({{ $item->id }})">
+                                            <button type="button" class="btn btn-sm btn-danger ml-1"
+                                                onclick="bayarDenda({{ $item->id }})">
                                                 <i class="fas fa-money-bill"></i> Bayar
                                             </button>
                                         @endif
@@ -164,7 +174,7 @@
         }
 
         // Pesan Sukses
-        @if(session('success'))
+        @if (session('success'))
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil',
@@ -173,9 +183,9 @@
                 showConfirmButton: false
             });
         @endif
-        
+
         // Pesan Error
-        @if(session('error'))
+        @if (session('error'))
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal',

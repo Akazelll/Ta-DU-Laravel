@@ -99,7 +99,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('is.admin')->group(function () {
         Route::resource('penerbit', PenerbitController::class)->except(['index', 'show']);
-        Route::resource('peminjaman', PeminjamanController::class)->except(['show', 'destroy']);
+        Route::resource('peminjaman', PeminjamanController::class)->except(['destroy']);
         Route::resource('kategori', KategoriController::class)->except(['index', 'show']);
         Route::resource('users', UserController::class)->except(['create', 'store', 'show']);
         Route::resource('penulis', App\Http\Controllers\PenulisController::class)->except(['show']);
