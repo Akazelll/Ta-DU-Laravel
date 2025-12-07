@@ -1,64 +1,40 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+@extends('adminlte::page')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }}</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+{{-- Konfigurasi Judul Halaman --}}
+@section('title')
+    {{ config('app.name', 'Laravel') }}
+    @hasSection('title')
+        | @yield('title')
+    @endif
+@stop
 
-<body class="font-sans antialiased bg-base dark:bg-dark-base" x-data="themeSwitcher()" x-init="init()">
-    <div class="min-h-screen">
-        @include('layouts.navigation')
+{{-- Header Halaman (Misal: Judul Besar di atas konten) --}}
+@section('content_header')
+    @hasSection('content_header')
+        @yield('content_header')
+    @endif
+@stop
 
-        @if (isset($header))
-            <header class="bg-surface dark:bg-dark-surface shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endif
+{{-- Konten Utama --}}
+@section('content')
+    @yield('content')
+@stop
 
-        <main>
-            {{ $slot }}
-        </main>
+{{-- Footer Halaman --}}
+@section('footer')
+    <div class="float-right d-none d-sm-block">
+        <b>Version</b> 1.0.0
     </div>
+    <strong>Copyright &copy; {{ date('Y') }} <a href="#">Perpustakaan Digital</a>.</strong> All rights reserved.
+@stop
 
-    @stack('scripts')
+{{-- CSS Tambahan (Global) --}}
+@section('css')
+    {{-- Tambahkan custom css jika perlu --}}
+    {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
+@stop
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('themeSwitcher', () => ({
-                theme: localStorage.getItem('theme') || 'system',
-                init() {
-                    this.applyTheme(this.theme);
-                    this.$watch('theme', newTheme => {
-                        localStorage.setItem('theme', newTheme);
-                        this.applyTheme(newTheme);
-                    });
-                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-                        if (this.theme === 'system') this.applyTheme('system');
-                    });
-                },
-                applyTheme(selectedTheme) {
-                    if (selectedTheme === 'dark' || (selectedTheme === 'system' && window.matchMedia(
-                            '(prefers-color-scheme: dark)').matches)) {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
-                    if (typeof window.updateChartTheme === 'function') {
-                        window.updateChartTheme();
-                    }
-                }
-            }));
-        });
-    </script>
-</body>
-
-</html>
+{{-- JS Tambahan (Global) --}}
+@section('js')
+    <script> console.log('AdminLTE loaded!'); </script>
+@stop
