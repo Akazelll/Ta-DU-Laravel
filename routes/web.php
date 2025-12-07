@@ -12,12 +12,7 @@ use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\BookScannerController;
 
-use App\Models\User;
-use App\Models\Penerbit;
-use App\Models\Buku;
-use App\Models\Peminjaman;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,7 +107,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/peminjaman/{peminjaman}/bayar-denda', [PeminjamanController::class, 'bayarDenda'])->name('peminjaman.bayarDenda');
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
-        // Route::post('/buku/scan-sampul', [BookScannerController::class, 'scan'])->name('buku.scan');
 
 
         Route::get('/laporan/peminjaman/cetak', [LaporanController::class, 'cetakPeminjaman'])->name('laporan.peminjaman.cetak');
