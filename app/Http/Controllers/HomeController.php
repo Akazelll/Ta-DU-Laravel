@@ -3,61 +3,79 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Peminjaman;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
+use App\Models\Penerbit;
+use App\Models\Buku;
+use App\Models\User;
+use App\Models\Peminjaman;
 
 class HomeController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
-    /**
      * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index()
     {
-        // Mengambil data peminjaman dalam 6 bulan terakhir
-        $loanStats = Peminjaman::select(
-            DB::raw('YEAR(tgl_pinjam) as year, MONTH(tgl_pinjam) as month'),
-            DB::raw('COUNT(*) as count')
-        )
-            ->where('tgl_pinjam', '>=', now()->subMonths(6)->startOfMonth())
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'asc')
-            ->orderBy('month', 'asc')
-            ->get();
+        $hour = now('Asia/Jakarta')->hour;
+        $greeting = match (true) {
+            $hour < 11 => 'Selamat Pagi 🌄',
+            $hour < 15 => 'Selamat Siang 🌞',
+            $hour < 19 => 'Selamat Sore 🌤️',
+            default => 'Selamat Malam 🌙',
+        };
 
-        // Mempersiapkan label untuk 6 bulan terakhir
-        $labels = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $labels[] = now()->subMonths($i)->isoFormat('MMMM');
+        $viewData = ['greeting' => $greeting];
+
+        if (Auth::user()->role == 'admin') {
+            $viewData['totalPenerbit'] = Penerbit::count();
+            $viewData['totalBuku'] = Buku::count();
+            $viewData['totalUser'] = User::count();
+            $viewData['peminjamanAktif'] = Peminjaman::where('status', 'pinjam')->count();
+
+            $viewData['bukuPopuler'] = Buku::withCount('peminjaman')
+                ->orderBy('peminjaman_count', 'desc')
+                ->take(5)
+                ->get();
+
+            $viewData['anggotaAktif'] = User::withCount('peminjaman')
+                ->orderBy('peminjaman_count', 'desc')
+                ->take(5)
+                ->get();
+
+            // Statistik Bulanan (MySQL Compatible)
+            $loanStats = Peminjaman::select(
+                DB::raw('YEAR(tgl_pinjam) as year'),
+                DB::raw('MONTH(tgl_pinjam) as month'),
+                DB::raw('MONTHNAME(tgl_pinjam) as month_name'),
+                DB::raw('COUNT(*) as count')
+            )
+                ->where('tgl_pinjam', '>=', now()->subMonths(6))
+                ->groupBy('year', 'month', 'month_name')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get();
+
+            $viewData['loanChartLabels'] = $loanStats->pluck('month_name');
+            $viewData['loanChartData'] = $loanStats->pluck('count');
+        } else {
+            // User Dashboard Logic
+            $userId = Auth::id();
+            $semuaPeminjamanUser = Peminjaman::where('id_user', $userId)
+                ->with('buku')
+                ->latest('tgl_pinjam')
+                ->get();
+
+            $viewData['sedangDipinjam'] = $semuaPeminjamanUser->where('status', 'pinjam');
+            $viewData['totalDibaca'] = $semuaPeminjamanUser->where('status', 'kembali')->count();
+            $viewData['totalDenda'] = $semuaPeminjamanUser->sum('denda');
+
+            $viewData['bukuPopuler'] = Buku::withCount('peminjaman')
+                ->orderBy('peminjaman_count', 'desc')
+                ->take(5)
+                ->get();
         }
 
-        // Memetakan data ke dalam array yang sesuai dengan label bulan
-        $data = array_fill(0, 6, 0);
-        foreach ($loanStats as $stat) {
-            $monthName = \Carbon\Carbon::createFromDate($stat->year, $stat->month, 1)->isoFormat('MMMM');
-            $index = array_search($monthName, $labels);
-            if ($index !== false) {
-                $data[$index] = $stat->count;
-            }
-        }
-
-        // Mengirim data ke view
-        return view('dashboard', [
-            'loanChartLabels' => $labels,
-            'loanChartData' => $data,
-            // ... (variabel lain yang mungkin Anda butuhkan di dasbor)
-        ]);
+        return view('dashboard', $viewData);
     }
 }

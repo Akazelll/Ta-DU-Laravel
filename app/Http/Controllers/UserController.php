@@ -64,4 +64,12 @@ class UserController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('user.pdf', compact('users'));
         return $pdf->stream('laporan-data-anggota.pdf');
     }
+    public function resetPassword(User $user)
+    {
+        // Set password default '12345678'
+        $user->password = Hash::make('12345678');
+        $user->save();
+
+        return redirect()->back()->with('success', "Password pengguna {$user->name} berhasil direset menjadi '12345678'.");
+    }
 }

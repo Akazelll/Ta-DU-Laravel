@@ -105,9 +105,6 @@ class BukuController extends Controller
 
     public function destroy(Buku $buku)
     {
-        if ($buku->sampul) {
-            Storage::disk('public')->delete($buku->sampul);
-        }
         $buku->delete();
         return redirect()->back()->with('success', 'Buku berhasil dihapus.');
     }

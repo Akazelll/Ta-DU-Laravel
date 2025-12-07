@@ -26,9 +26,17 @@
                         <div class="timeline">
                             {{-- Loop data peminjaman --}}
                             @foreach($peminjaman as $item)
+                                {{-- Setup Variabel Helper untuk Logic View --}}
+                                @php
+                                    $tgl_kembali = $item->tgl_kembali ? \Carbon\Carbon::parse($item->tgl_kembali) : null;
+                                    $jatuh_tempo = \Carbon\Carbon::parse($item->tanggal_harus_kembali);
+                                    $is_overdue = !$tgl_kembali && now()->gt($jatuh_tempo);
+                                    $bg_class = $item->status == 'pinjam' ? ($is_overdue ? 'danger' : 'warning') : 'success';
+                                @endphp
+
                                 {{-- Label Tanggal --}}
                                 <div class="time-label">
-                                    <span class="bg-{{ $item->status == 'pinjam' ? 'warning' : 'success' }}">
+                                    <span class="bg-{{ $bg_class }}">
                                         {{ \Carbon\Carbon::parse($item->tgl_pinjam)->format('d M Y') }}
                                     </span>
                                 </div>
@@ -36,10 +44,12 @@
                                 {{-- Item Timeline --}}
                                 <div>
                                     {{-- Ikon berdasarkan status --}}
-                                    @if ($item->is_overdue && $item->status == 'pinjam')
-                                        <i class="fas fa-exclamation-triangle bg-danger"></i>
-                                    @elseif($item->status == 'pinjam')
-                                        <i class="fas fa-book-reader bg-warning"></i>
+                                    @if ($item->status == 'pinjam')
+                                        @if($is_overdue)
+                                            <i class="fas fa-exclamation-triangle bg-danger"></i>
+                                        @else
+                                            <i class="fas fa-book-reader bg-warning"></i>
+                                        @endif
                                     @else
                                         <i class="fas fa-check bg-success"></i>
                                     @endif
@@ -51,43 +61,72 @@
                                         {{-- Header --}}
                                         <h3 class="timeline-header">
                                             @if($item->status == 'pinjam')
-                                                Anda <strong>meminjam</strong> buku
+                                                Anda sedang <strong>meminjam</strong> buku
                                             @else
-                                                Anda <strong>mengembalikan</strong> buku
+                                                Anda telah <strong>mengembalikan</strong> buku
                                             @endif
-                                            <a href="{{ $item->buku ? route('buku.show', $item->buku) : '#' }}">{{ $item->buku->judul_buku ?? '(Buku Dihapus)' }}</a>
+                                            <a href="{{ $item->buku ? route('buku.show', $item->buku->id) : '#' }}">
+                                                {{ $item->buku->judul_buku ?? '(Buku Telah Dihapus)' }}
+                                            </a>
                                         </h3>
 
                                         {{-- Body (Detail) --}}
                                         <div class="timeline-body">
                                             <div class="row">
-                                                <div class="col-sm-4">
+                                                <div class="col-sm-4 border-right">
                                                     <strong><i class="fas fa-calendar-alt mr-1"></i> Batas Kembali:</strong><br>
-                                                    <span class="{{ $item->is_overdue && $item->status == 'pinjam' ? 'text-danger font-weight-bold' : '' }}">
-                                                        {{ \Carbon\Carbon::parse($item->tanggal_harus_kembali)->format('d F Y') }}
+                                                    <span class="{{ $is_overdue ? 'text-danger font-weight-bold' : '' }}">
+                                                        {{ $jatuh_tempo->format('d F Y') }}
                                                     </span>
-                                                </div>
-                                                <div class="col-sm-4">
-                                                    <strong><i class="fas fa-info-circle mr-1"></i> Status:</strong><br>
-                                                    @if ($item->is_overdue && $item->status == 'pinjam')
-                                                        <span class="badge badge-danger">Terlambat</span>
-                                                    @elseif($item->status == 'pinjam')
-                                                        <span class="badge badge-warning">Sedang Dipinjam</span>
-                                                    @else
-                                                        <span class="badge badge-success">Dikembalikan</span>
-                                                        <small class="text-muted">({{ \Carbon\Carbon::parse($item->tgl_kembali)->format('d M Y') }})</small>
+                                                    @if($is_overdue)
+                                                        <br><small class="text-danger">(Terlambat {{ $jatuh_tempo->diffInDays(now()) }} hari)</small>
                                                     @endif
                                                 </div>
-                                                <div class="col-sm-4">
-                                                    <strong><i class="fas fa-coins mr-1"></i> Denda:</strong><br>
-                                                    @if($item->denda_terhitung > 0)
-                                                        <span class="text-danger">Rp {{ number_format($item->denda_terhitung, 0, ',', '.') }}</span>
+                                                
+                                                <div class="col-sm-4 border-right">
+                                                    <strong><i class="fas fa-info-circle mr-1"></i> Status Buku:</strong><br>
+                                                    @if($item->status == 'pinjam')
+                                                        @if($is_overdue)
+                                                            <span class="badge badge-danger">Terlambat</span>
+                                                        @else
+                                                            <span class="badge badge-warning">Sedang Dipinjam</span>
+                                                        @endif
                                                     @else
-                                                        -
+                                                        <span class="badge badge-success">Dikembalikan</span>
+                                                        <div class="small text-muted mt-1">
+                                                            Tgl Kembali: {{ $tgl_kembali->format('d/m/Y') }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <div class="col-sm-4">
+                                                    <strong><i class="fas fa-coins mr-1"></i> Info Denda:</strong><br>
+                                                    @if($item->denda > 0)
+                                                        <span class="text-danger font-weight-bold">Rp {{ number_format($item->denda, 0, ',', '.') }}</span>
+                                                        
+                                                        <div class="mt-1">
+                                                            @if($item->status_denda == 'Lunas')
+                                                                <span class="badge badge-success">Lunas</span>
+                                                            @else
+                                                                <span class="badge badge-danger">Belum Lunas</span>
+                                                                @if($item->denda_dibayar > 0)
+                                                                    <small class="d-block text-muted">Dibayar: {{ number_format($item->denda_dibayar) }}</small>
+                                                                @endif
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        <span class="text-success">Tidak ada denda</span>
                                                     @endif
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        {{-- Footer (Optional actions) --}}
+                                        @if($item->status == 'pinjam')
+                                        <div class="timeline-footer">
+                                            <a href="{{ route('buku.show', $item->id_buku) }}" class="btn btn-primary btn-sm">Lihat Buku</a>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -111,13 +150,15 @@
 
 @section('css')
     <style>
-        /* Sedikit penyesuaian agar timeline item terlihat rapi */
         .timeline-header a {
             color: #007bff;
             font-weight: 600;
         }
         .timeline-header a:hover {
             text-decoration: underline;
+        }
+        .badge {
+            font-size: 90%;
         }
     </style>
 @stop

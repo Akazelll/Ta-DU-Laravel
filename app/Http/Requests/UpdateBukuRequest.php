@@ -24,6 +24,7 @@ class UpdateBukuRequest extends FormRequest
         return [
             'judul_buku'    => 'required|string|max:255',
             'id_penerbit'   => 'required|exists:penerbit,id',
+            'id_penulis'    => 'required|exists:penulis,id',
             'kategori_id'   => 'nullable|exists:kategori,id',
             'tahun_terbit'  => 'required|digits:4|integer|min:1900',
             'jml_halaman'   => 'required|integer|min:1',
