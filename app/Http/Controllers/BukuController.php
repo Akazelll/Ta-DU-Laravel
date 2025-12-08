@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Buku;
 use App\Models\Penerbit;
 use App\Models\Kategori;
-use App\Models\Penulis; // [PENTING] Untuk fix error undefined variable $penulis
+use App\Models\Penulis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreBukuRequest;
 use App\Http\Requests\UpdateBukuRequest;
-use Illuminate\Support\Str; // [PENTING] Untuk fix error Class 'String' not found
+use Illuminate\Support\Str;
 
 class BukuController extends Controller
 {
@@ -22,7 +22,7 @@ class BukuController extends Controller
         $search = $request->input('search');
         $kategoriFilter = $request->input('kategori');
 
-        $buku = Buku::with(['penerbit', 'kategori', 'penulis']) // Eager load penulis juga
+        $buku = Buku::with(['penerbit', 'kategori', 'penulis']) 
             ->when($search, function ($query, $search) {
                 return $query->where('judul_buku', 'like', "%{$search}%")
                     ->orWhereHas('penerbit', function ($q) use ($search) {
@@ -45,7 +45,7 @@ class BukuController extends Controller
     {
         $penerbit = Penerbit::all();
         $kategori = Kategori::all();
-        $penulis = Penulis::all(); // [FIX] Ambil data penulis
+        $penulis = Penulis::all();
 
         return view('buku.create', compact('penerbit', 'kategori', 'penulis'));
     }
